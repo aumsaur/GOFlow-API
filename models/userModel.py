@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, EmailStr
 
 from typing import Optional
 
@@ -23,6 +23,7 @@ class Badges(str, Enum):  # Plan
 
 
 class User(BaseModel):
+    __tablename__ = 'UserData'
     username: str
     email: EmailStr
     password: str
