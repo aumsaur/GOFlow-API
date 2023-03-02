@@ -1,48 +1,40 @@
 from pydantic import BaseModel, EmailStr
 
-from typing import Optional
 
-from enum import Enum
-
-
-class Gender(str, Enum):
-    male = "male"
-    female = "female"
-
-
-class Role(str, Enum):  # Role/Permission in project
-    owner = "owner"
-    coowner = "coowner"
-    member = "member"
-    guest = "guest"
-
-
-class Badges(str, Enum):  # Plan
-    admin = "admin"
-    free = "free"
-
-
-class User(BaseModel):
-    __tablename__ = 'UserData'
+class UserBase(BaseModel):
     username: str
-    email: EmailStr
+    email: EmailStr | None = None
+
+    # @property
+    # def email(self):
+    #     return self._email
+
+    # @email.setter
+    # def email(self, value):
+    #     if value is None:
+    #         self._email = f"{self.username}@mail.com"
+    #     elif isinstance(value, str) and "@" in value:
+    #         self._email = value
+    #     else:
+    #         raise ValueError("Invalid email address")
+
+
+class UserIn(UserBase):
     password: str
 
 
-# class Token(BaseModel):
-#     username: str
-#     email: EmailStr
-#     password: str
-
-#     @validator("username", pre=True)
-#     def isUsername(cls, value):
-#         if value is None:
-#             if cls.dict().get("email") is None:
-#                 raise ValueError("email or username is required")
-#         return value
+class UserOut(UserBase):
+    pass
 
 
-class Profile(BaseModel):
-    fName: str
-    mName: Optional[str]
-    lName: str
+class User(UserBase):
+    hashed_password: str
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: str | None = None

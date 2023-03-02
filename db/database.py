@@ -1,59 +1,38 @@
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-import json
+# import databases
+# import sqlalchemy
 
 
-Base = declarative_base()
+# # SQLAlchemy specific code, as with any other app
+# DATABASE_URL = "sqlite:///mockup_azure_sql.db"
+# # DATABASE_URL = "postgresql://user:password@postgresserver/db"
+
+# database = databases.Database(DATABASE_URL)
+
+# metadata = sqlalchemy.MetaData()
+
+# notes = sqlalchemy.Table(
+#     "notes",
+#     metadata,
+#     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+#     sqlalchemy.Column("text", sqlalchemy.String),
+#     sqlalchemy.Column("completed", sqlalchemy.Boolean),
+# )
 
 
-class UserData(Base):
-    __tablename__ = 'UserData'
+# engine = sqlalchemy.create_engine(
+#     DATABASE_URL, connect_args={"check_same_thread": False}
+# )
+# metadata.create_all(engine)
 
-    id = Column(Integer, primary_key=True)
-    username = Column(String)
-    email = Column(String)
-    password = Column(String)
-    data = Column(String)
-
-    def __init__(self, username, email, password):
-        self.username = username
-        self.email = email
-        self.password = password
-        self.data = json.dumps({
-            'username': username,
-            'email': email,
-            'password': password
-        })
-
-
-engine = create_engine('sqlite:///mockup_azure_sql.db')
-# Base.metadata.create_all(engine)
-
-# create a session local factory to manage database sessions
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-
-def init_db():
-    Base.metadata.create_all(bind=engine)
-
-
-def get_db():
-    try:
-        db = SessionLocal()
-        yield db
-    finally:
-        db.close()
-
-
-def store_user_data(user_data: str):
-    db = SessionLocal()
-    user = UserData(data=user_data)
-    db.add(user)
-    db.commit()
-
-
-def get_user_data(user_id: int):
-    db = SessionLocal()
-    user = db.query(UserData).get(user_id)
-    return user.data
+fake_users_db = {
+    "tester": {
+        "username": "tester",
+        "email": "tester@example.com",
+        "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # secret
+    },
+    "josh": {
+        "username": "josh",
+        "email": "josh@example.com",
+        "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # secret
+    }
+}
