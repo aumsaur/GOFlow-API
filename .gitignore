@@ -1,0 +1,9 @@
+.vscode
+.venv
+__pycache__
+*.py[cod]
+*$py.class
+
+# vim temporary files
+*~
+.*.sw?
