@@ -1,33 +1,10 @@
-from typing import List
+from apps.auth import app
+import ssl
 
-from fastapi import FastAPI
+# Generate a self-signed SSL/TLS certificate
+context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+context.load_cert_chain(certfile="./perm/cert.pem", keyfile="./perm/key.pem")
 
-from models import User, Gender, Role
-
-app = FastAPI()
-
-db: List[User] = [
-    User(
-        username="username00",
-        password="",
-        first_name="Romtam",
-        last_name="Tanpituckpong",
-        gender=Gender.male,
-        role=[Role.user, Role.admin])
-]
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/api/v1/users")
-async def fetch_users():
-    return db
-
-
-@app.post("/api/v1/users")
-async def register_user(user: User):
-    db.append(user)
-    return {"username": user.username}
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000, ssl=context)
