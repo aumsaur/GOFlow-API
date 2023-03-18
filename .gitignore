@@ -10,3 +10,4 @@ localconfig.json
 # vim temporary files
 *~
 .*.sw?
+__pycache__/main.cpython-310.pyc
