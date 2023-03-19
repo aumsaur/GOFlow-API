@@ -1,0 +1,53 @@
+{
+  "0": {
+    "type": "START",
+    "next_block": [1]
+  },
+
+  "1": {
+    "type": "DECLARE",
+    "declared_var": [
+      { "type": "number", "value": 20, "name": "a" },
+      { "type": "number", "value": 5, "name": "b" },
+      { "type": "number", "value": 1, "name": "c" },
+      { "type": "number", "value": 1, "name": "i" }
+    ],
+    "next_block": [2]
+  },
+  "2": {
+    "type": "ASSIGN",
+    "result": { "type": "number", "value": null, "name": "a" },
+    "equation_string": "3",
+    "equation": [
+      { "type": "number", "value": 10, "name": "b" },
+      { "type": "operator", "value": "+" },
+      { "type": "number", "value": 10, "name": "c" }
+    ],
+    "next_block": [3]
+  },
+  "3": {
+    "type": "WHILE",
+    "equation_string": "a<=5",
+    "equation": [],
+
+    "sub_block": {
+      "6": {
+        "type": "ASSIGN",
+        "result": { "type": "number", "value": 10, "name": "a" },
+        "equation_string": "a+1",
+        "equation": [],
+        "next_block": [7]
+      },
+
+      "7": {
+        "type": "END",
+        "next_block": [-1]
+      }
+    },
+    "next_block": [5]
+  },
+  "5": {
+    "type": "END",
+    "next_block": [-1]
+  }
+}

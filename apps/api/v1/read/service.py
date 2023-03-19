@@ -3,20 +3,15 @@ from fastapi.encoders import jsonable_encoder
 from apps.schemas.item import ItemCreate, ItemEdited
 from datetime import datetime, timedelta
 
-from typing import Dict
+from typing import Dict, Any
 
 import uuid
+import json
 
 fake_item_db = {}
 
 
 router = APIRouter()
-
-
-# def get_user(username: str):
-#     if username in fake_users_db:
-#         user_dict = fake_users_db[username]
-#         return User(**user_dict)
 
 
 @router.post("/api/v1/items/")
@@ -29,16 +24,46 @@ async def create_item():
 
 
 @router.post("/api/v1/items/{item_id}")
-async def update_item(item_id: str, item_data_edited: Dict):
+async def update_item(item_id: str, itemdata_edited: Dict):
     if item_id in fake_item_db:
-        # edited_item = ItemEdited()
-        # edited_item = fake_item_db[item_id]
-        # edited_item.itemdata = item_data_edited
-        # edited_item.edited = datetime.utcnow()
-        # fake_item_db[item_id] = jsonable_encoder(edited_item)
-        return fake_item_db[item_id]
-    else:
-        raise HTTPException(status_code=404, detail="Item not found")
+        fake_item_db[item_id]["itemdata"] = itemdata_edited
+        fake_item_db[item_id]["created"] = datetime.utcnow()
+    return itemdata_edited
+    # print(itemdata_edited)
+    # fake_item_db[item_id].itemdata = itemdata
+    # return fake_item_db[item_id]
+    # else:
+    #     raise HTTPException(status_code=404, detail="Item not found")
+    # if item_id in fake_item_db:
+    #     edited_item = fake_item_db[item_id]
+    #     edited_item['item_data'] = item_data_edited
+    #     edited_item['edited'] = datetime.utcnow()
+    #     # edited_item.itemdata = item_data_edited
+    #     # edited_item.edited = datetime.utcnow()
+    #     fake_item_db[item_id] = jsonable_encoder(edited_item)
+    #     return fake_item_db[item_id]
+    # else:
+    #     raise HTTPException(status_code=404, detail="Item not found")
+
+# @router.post("/api/v1/items/{item_id}")
+# async def update_item(item_id: str):
+#     if item_id in fake_item_db:
+#         edited_item = fake_item_db[item_id]
+#         edited_item['item_data'] = newjson
+#         edited_item['edited'] = datetime.utcnow()
+#         # edited_item.itemdata = item_data_edited
+#         # edited_item.edited = datetime.utcnow()
+#         fake_item_db[item_id] = jsonable_encoder(edited_item)
+#         return fake_item_db[item_id]
+#     else:
+#         raise HTTPException(status_code=404, detail="Item not found")
+
+
+# @router.post("/api/v1/items/dev")
+# async def dev_item():
+#     # if item_id in fake_item_db:
+#     # itemdata = ItemEdited.parse_raw_as(dict, itemdata_edited)
+#     return newjsondev
 
 
 @router.get("/api/v1/items/{item_id}")
@@ -47,8 +72,6 @@ async def read_item(item_id: str):
         return fake_item_db[item_id]
     else:
         raise HTTPException(status_code=404, detail="Item not found")
-
-fake_item_db = {}
 
 
 @router.get("/api/v1/items/all/")
