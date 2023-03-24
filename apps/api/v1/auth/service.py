@@ -23,7 +23,7 @@ from apps import crud, models, schemas
 from apps.api import deps
 from apps.core.config import settings
 from apps.core.oauthconfig import oauth
-from apps.core.secure import create_access_token, get_user_from_token
+from apps.core.security import create_access_token, get_user_from_token
 
 router = APIRouter()
 

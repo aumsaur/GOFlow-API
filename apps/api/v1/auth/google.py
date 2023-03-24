@@ -1,4 +1,4 @@
-from apps.core.secure import create_jwt_token
+from apps.core.security import create_jwt_token
 from fastapi import (
     APIRouter
 )

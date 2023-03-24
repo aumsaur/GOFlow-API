@@ -5,8 +5,8 @@ from typing import (
     Any
 )
 
-from crud_base import CRUDBase
-from models.item import Item
+from .crud_base import CRUDBase
+from apps.models.item import Item
 from schemas.item import ItemCreate, ItemUpdate, ItemInDB
 from sqlalchemy.orm import Session
 from core.secure import get_hashed_password, verify_password
