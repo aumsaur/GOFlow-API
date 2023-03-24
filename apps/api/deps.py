@@ -9,7 +9,7 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from apps import crud, models, schemas
-from apps.core import secure
+from apps.core import security
 # from apps.core.config import settings
 from apps.azure.session import session
 

@@ -9,7 +9,7 @@ from .crud_base import CRUDBase
 from apps.models.user import User
 from apps.schemas.user import UserCreate, UserUpdate, UserType
 from sqlalchemy.orm import Session
-from apps.core.secure import get_hashed_password, verify_password
+from apps.core.security import get_hashed_password, verify_password
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
