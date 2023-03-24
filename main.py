@@ -2,29 +2,21 @@ from typing import List
 
 from fastapi import FastAPI
 
-from models import User, Gender, Role
+# from apps.api.v1.auth import router as auth_router
+# from apps.core.config import settings
+from apps.api.v1.read.service import router
 
 app = FastAPI()
-
-db: List[User] = [
-    User(
-        username="username00",
-        password="",
-        first_name="Romtam",
-        last_name="Tanpituckpong",
-        gender=Gender.male,
-        role=[Role.user, Role.admin])
-]
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/api/v1/users")
-async def fetch_users():
-    return db
+# Set all CORS enabled origins
+# if settings.BACKEND_CORS_ORIGINS:
+#     app.add_middleware(
+#         CORSMiddleware,
+#         allow_origins=[str(origin)
+#                        for origin in settings.BACKEND_CORS_ORIGINS],
+#         allow_credentials=True,
+#         allow_methods=["*"],
+#         allow_headers=["*"],
+#     )
 
 
 @app.post("/api/v1/users")
