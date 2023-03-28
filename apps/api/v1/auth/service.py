@@ -1,21 +1,21 @@
 import json
-import os
-from datetime import datetime, timedelta
+from typing import Any
+from datetime import timedelta
 
-from authlib.integrations.starlette_client import (
-    OAuth,
-    OAuthError
-)
+from authlib.integrations.starlette_client import OAuthError
 
-from starlette.middleware.sessions import SessionMiddleware
+# from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
-
+# from starlette.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi import (
     APIRouter,
     HTTPException,
     status,
+    Body,
     Depends
 )
+
+from fastapi.encoders import jsonable_encoder
 
 from sqlalchemy.orm import Session
 
@@ -30,12 +30,33 @@ router = APIRouter()
 # App ###########
 
 
-@router.post("/register")
+@router.get("/")
+async def home(db: Session = Depends(deps.get_db)):
+
+    if not db:
+        print(db)
+        try:
+            return db
+        except:
+            return "cant return db"
+    return "db is none"
+
+
+@router.post("/register", response_model=schemas.Token)
 async def register(db: Session = Depends(deps.get_db), newuser: schemas.UserCreate = Depends()):
     if crud.user.get_by_email(db, email=newuser.email):
         return status.HTTP_409_CONFLICT  # email already being used
-    crud.user.create(db, obj_in=newuser)
-    return status.HTTP_201_CREATED  # should return login session instead
+    user = crud.user.create(db, obj_in=newuser)
+    # return status.HTTP_201_CREATED  # should return login session instead
+    access_token_expires = timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    return {
+        "access_token": create_access_token(
+            {"sub": user}, expires_delta=access_token_expires
+        ),
+        "token_type": "bearer",
+    }
+# status.
 
 
 @router.post("/login/access-token", response_model=schemas.Token)
@@ -53,7 +74,7 @@ async def login_access_token(db: Session = Depends(deps.get_db), *, email: str, 
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
         "access_token": create_access_token(
-            user.email, expires_delta=access_token_expires
+            {"sub": user}, expires_delta=access_token_expires
         ),
         "token_type": "bearer",
     }
@@ -67,30 +88,68 @@ async def login_access_token_google(request: Request):
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
-# @router.get('/login/access-token/google/callback')
-# async def authenticate_google(request: Request, db: Session = Depends(deps.get_db)):
-
 @router.get('/login/access-token/google/callback')
-async def authenticate_google(request: Request):
+async def authenticate_google(request: Request, db: Session = Depends(deps.get_db)):
     try:
         token = await oauth.google.authorize_access_token(request)
     except OAuthError as error:
         print(error)
-        return
+        return error
     # token = await oauth.google.authorize_access_token(request)
-    user = token.get('userinfo')
-    if user:
-        email = user.get('email')
-    print(email + ';email')
-    print('\n;email')
-    return email
-    # userinfo = json.dumps(token.get('userinfo'))
-    # return userinfo + '\n; ' + user + '\n;' + token.get('userinfo')
-    # if not crud.user.get_by_email(db, email=user.get('email')):
-    #     created = schemas.UserCreate(displayname=user.get('name').replace(' ', ''), email=user.get('email'),
-    #                                  user_type=schemas.UserType.google)
-    #     # crud.user.create(db, obj_in=user)
-    #     print(created)
+    # user = token.get('userinfo')
+    # print(user)
+    # print('\n\n' + user.get('email') + '; ' + user.get('given_name') + '\n\n')
+    # if user:
+    # print(crud.user.get_by_email(db, email=user.get('email')).displayname)
+    # print('\n\n')
+    if token.get('userinfo'):
+        user_google = token.get('userinfo')
+        if not crud.user.get_by_email(db, email=user_google.get('email')):
+            created = schemas.UserCreate(
+                displayname=user_google.get('given_name'),
+                email=user_google.get('email'),
+                user_type=schemas.UserType.google
+            )
+            # print(created)
+            # print('\n\n')
+            crud.user.create(db, obj_in=created)
+    user = crud.user.authenticate(
+        db, email=user_google.get('email')
+    )
+    access_token_expires = timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    return {
+        "access_token": create_access_token(
+            {"sub": user}, expires_delta=access_token_expires
+        ),
+        "token_type": "bearer",
+    }
+
+
+# @router.put("/me", response_model=schemas.User)
+# def update_user_me(
+#     *,
+#     db: Session = Depends(deps.get_db),
+#     password: str = Body(None),
+#     full_name: str = Body(None),
+#     # email: EmailStr = Body(None),
+#     current_user: models.User = Depends(deps.get_current_active_user),
+# ) -> Any:
+#     """
+#     Update own user.
+#     """
+#     current_user_data = jsonable_encoder(current_user)
+#     user_in = schemas.UserUpdate(**current_user_data)
+#     if password is not None:
+#         user_in.password = password
+#     if full_name is not None:
+#         user_in.full_name = full_name
+#     # if email is not None:
+#     #     user_in.email = email
+#     user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
+#     return user
+
+# @router.delete
 
 
 # def authenticate_user(username: str, password: str):
