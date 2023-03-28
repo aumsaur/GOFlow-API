@@ -2,11 +2,13 @@ from typing import List
 
 from fastapi import FastAPI
 
-from apps.api.v1.auth.service import router
+# from apps.api.v1.auth.service import router
 # from apps.core.config import settings
-# from apps.api.v1.read.service import router
+from apps.api.v1.api import api_router
+from starlette.middleware.sessions import SessionMiddleware
 
 app = FastAPI()
+app.add_middleware(SessionMiddleware, secret_key="!secret")
 # Set all CORS enabled origins
 # if settings.BACKEND_CORS_ORIGINS:
 #     app.add_middleware(
@@ -18,4 +20,4 @@ app = FastAPI()
 #         allow_headers=["*"],
 #     )
 
-app.include_router(router)
+app.include_router(api_router)
