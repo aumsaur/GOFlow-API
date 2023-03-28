@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Union, Dict, Any
-# from enum import Enum
+from typing import Type
 from datetime import datetime
 
 
@@ -9,20 +9,22 @@ class ItemBase(BaseModel):
 
 
 class ItemCreate(ItemBase):
-    owner: EmailStr
-    created: datetime
+    owner_id: str
+    startupdata: Dict[str, Any] | None = None
 
 
 class ItemUpdate(ItemBase):
-    updated: datetime
-    metadata: Dict[str, Any]
+    itemdata: Dict[str, Any] | None = None
 
 
-class ItemInDBBase(Union[ItemCreate, ItemUpdate]):
-    item_uid: str  # uid
+class ItemInDBBase(ItemCreate, ItemUpdate):
+    id: str
+    created: datetime
+    edited: datetime
 
     class Config:
         orm_mode = True
+        exclude = ['startupdata']
 
 
 class ItemGet(ItemInDBBase):

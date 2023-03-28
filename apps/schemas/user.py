@@ -17,6 +17,8 @@ class UserBase(BaseModel):
 
 
 class UserDBBase(UserBase):
+    id: str
+
     class Config:
         orm_mode = True
 
@@ -33,5 +35,7 @@ class UserGet(UserDBBase):
     pass
 
 
-class UserUpdate(UserCreate):
+class UserUpdate(UserDBBase):
+    old_password: str
+    new_password: str
     pass
