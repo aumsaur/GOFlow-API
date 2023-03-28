@@ -18,15 +18,15 @@ reusable_oauth2 = OAuth2PasswordBearer(
 )
 
 
-# def get_db() -> Generator:
-#     try:
-#         db = session()
-#         yield db
-#     finally:
-#         db.close()
-
-
 def get_db() -> Generator:
+    try:
+        db = session()
+        yield db
+    finally:
+        db.close()
+
+
+# def get_db() -> Generator:
     # USERS_FILE = 'users.json'
 
     # # Initialize the users file if it doesn't exist or is empty
@@ -35,8 +35,8 @@ def get_db() -> Generator:
     #         json.dump({}, f)
     # with open(USERS_FILE, 'r') as f:
     #     users = json.load(f)
-    users = {}
-    return users
+    # users = {}
+    # return users
 
 
 # def get_current_user(
