@@ -10,14 +10,14 @@ from apps.azure.base_model import Base
 
 
 class Item(Base):
-    id = Column(String, primary_key=True, index=True, unique=True)
-    owner_id = Column(String, ForeignKey("user.id"), index=True)
-    # owner_email = Column(String, ForeignKey("user.email"), index=True)
-    owner = relationship("User", back_populates="items")
+    id = Column(String(255), primary_key=True, index=True, unique=True)
+    owner_id = Column(String(255), ForeignKey("user.id"), index=True)
     title = Column(String, index=False)
     created = Column(String, index=False)
     edited = Column(String, index=False)
     itemdata = Column(JSON, index=False)
+
+    owner = relationship("User", back_populates="items")
 
     __table_args__ = (
         ForeignKeyConstraint(
