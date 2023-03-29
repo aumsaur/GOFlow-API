@@ -3,10 +3,7 @@
 __pycache__
 *.py[cod]
 *$py.class
-client_secret.json
-perm
-localconfig.json
-config.py
+credentials.py
 # vim temporary files
 *~
 .*.sw?
