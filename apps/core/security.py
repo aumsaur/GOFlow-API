@@ -15,10 +15,11 @@ SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def create_access_token(data: dict, expires_delta: timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)):
+def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)):
     payload = data.copy()
     expire = datetime.utcnow() + expires_delta
     payload.update({"exp": expire})
@@ -26,12 +27,12 @@ def create_access_token(data: dict, expires_delta: timedelta(minutes=ACCESS_TOKE
     return encoded_payload
 
 
-def create_jwt_token(data: Dict[str, Any], expires_delta: timedelta):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+# def create_jwt_token(data: Dict[str, Any], expires_delta: timedelta):
+#     to_encode = data.copy()
+#     expire = datetime.utcnow() + expires_delta
+#     to_encode.update({"exp": expire})
+#     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+#     return encoded_jwt
 
 
 def decode_access_token(token: str):
