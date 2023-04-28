@@ -4,10 +4,11 @@ from datetime import timedelta
 from authlib.integrations.starlette_client import OAuthError
 
 # from starlette.middleware.sessions import SessionMiddleware
-from starlette.requests import Request
+# from starlette.requests import Request
 from starlette.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi import (
     APIRouter,
+    Request,
     HTTPException,
     status,
     Depends
@@ -20,8 +21,8 @@ from sqlalchemy.orm import Session
 from apps import crud, models, schemas
 from apps.api import deps
 from apps.core.config import settings
-from apps.core.oauthconfig import oauth
-from apps.core.security import create_access_token, get_user_from_token
+# from apps.core.oauthconfig import oauth
+from apps.core.security import create_access_token, decode_access_token, get_hashed_password
 
 router = APIRouter()
 
@@ -37,31 +38,31 @@ async def home(db: Session = Depends(deps.get_db)):
             return db
         except:
             return "cant return db"
-    return "db is none"
+    return db
 
 
 @router.post("/register")
-async def register(request: Request, db: Session = Depends(deps.get_db), newuser: schemas.UserCreate = Depends()):
+async def register(request: Request, db: Session = Depends(deps.get_db), *, newuser: schemas.UserCreate = Depends()):
     if crud.user.get_by_email(db, email=newuser.email):
-        return status.HTTP_409_CONFLICT  # email already being used
+        # email already being used
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="This email is already used")
     user = crud.user.create(db, obj_in=newuser)
-    # return status.HTTP_201_CREATED  # should return login session instead
+
     access_token_expires = timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    # request.session['user'] = dict(user)
-    return {
+    access_token = {
         "access_token": create_access_token(
             {"sub": user.json()}, expires_delta=access_token_expires
         ),
         "token_type": "bearer", "status": status.HTTP_201_CREATED
     }
+    # request.session['access_token'] = access_token
+    return access_token
 
 
 @router.post("/login/access-token")
 async def login_access_token(request: Request, db: Session = Depends(deps.get_db), *, email: str, password: str):
-    """
-    OAuth2 compatible token login, get an access token for future requests
-    """
     user = crud.user.authenticate(
         db, email=email, password=password
     )
@@ -70,47 +71,83 @@ async def login_access_token(request: Request, db: Session = Depends(deps.get_db
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
     access_token_expires = timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    return {
-        "access_token": create_access_token(
-            {"sub": user.json()}, expires_delta=access_token_expires
-        ),
-        "token_type": "bearer", "status": status.HTTP_200_OK
+    access_token = {
+        {
+            "access_token": create_access_token(
+                {"sub": user.json()}, expires_delta=access_token_expires
+            ),
+            "token_type": "bearer", "status": status.HTTP_200_OK
+        }
     }
+    # request.session['access_token'] = access_token
+    return access_token
+
 
 # Google ###########
 
+# {
+# "id": "109518956227943178476",
 
-@router.get('/login/access-token/google')
-async def login_access_token_google(request: Request):
-    redirect_uri = request.url_for('authenticate_google')
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+# TODO: "email": "romtam.tan@mail.kmutt.ac.th",
+
+# "verified_email": true,
+# "name": "ROMTAM TANPITUCKPONG",
+
+# TODO: "given_name": "ROMTAM",
+
+# "family_name": "TANPITUCKPONG",
+# "picture": "https://lh3.googleusercontent.com/a/AGNmyxYHvnb4Av7lWxqyBELi4uaJYS3z0rvItFkjgwS0=s96-c",
+# "locale": "en", "hd": "mail.kmutt.ac.th"
+# }
 
 
-@router.get('/login/access-token/google/callback')
-async def authenticate_google(request: Request, db: Session = Depends(deps.get_db)):
-    try:
-        token = await oauth.google.authorize_access_token(request)
-    except OAuthError as error:
-        return error.description
-    if token.get('userinfo'):
-        user_google = token.get('userinfo')
-        if not crud.user.get_by_email(db, email=user_google.get('email')):
-            created = schemas.UserCreate(
-                displayname=user_google.get('given_name'),
-                email=user_google.get('email'),
-                user_type=schemas.UserType.google
-            )
-            crud.user.create(db, obj_in=created)
+@router.post('/login-google/access-token')
+async def authenticate_google(request: Request, db: Session = Depends(deps.get_db), *, token: dict):
+    if not crud.user.get_by_email(db, email=token.get('email')):
+        created = schemas.UserCreate(
+            displayname=token.get('given_name'),
+            email=token.get('email'),
+            user_type=schemas.UserType.google
+        )
+        crud.user.create(db, obj_in=created)
     user = crud.user.authenticate(
-        db, email=user_google.get('email')
+        db, email=token.get('email'), type=schemas.UserType.google
     )
-    print(type(user))
-    print(type({"sub": user}))
     access_token_expires = timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    return {
+    access_token = {
         "access_token": create_access_token(
             {"sub": user.json()}, expires_delta=access_token_expires
         ),
         "token_type": "bearer", "status": status.HTTP_200_OK
     }
+    return access_token
+
+
+@router.get('/logout')
+async def logout(request: Request):
+    request.session.pop('access_token', None)
+
+# google login api which is popup instead of redirect to google login page with fastapi
+
+# TOKEN
+# {
+#     "sub": "{\"displayname\": \"ROMTAM\", \"email\": \"romtam.tan@mail.kmutt.ac.th\", \"user_type\": \"Google\", \"id\": \"737853f057734cf49ecd742071c743bd\"}",
+#     "exp": 1682822977
+# }
+# 1682822977 is
+
+
+@router.get('/decode-token')
+async def decode_token(token: str):
+    return decode_access_token(token)
+
+
+@router.delete('/delete')
+async def delete_user(db: Session = Depends(deps.get_db), *, id: str):
+    return crud.user.remove(db, id=id)
+
+
+@router.get('/fetch')
+async def fetch_user(db: Session = Depends(deps.get_db), *, email: str):
+    return crud.user.get_by_email(db, email=email)

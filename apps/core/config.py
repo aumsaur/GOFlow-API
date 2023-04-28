@@ -4,9 +4,12 @@ from .credentials import app_setting, google_setting
 
 class Settings(BaseSettings):
     API_V1_STR = "/api/v1"
+    BACKEND_CORS_ORIGINS = [
+        "https://localhost:8000",
+        "http://localhost:3000",
+    ]
 
-    # secrets.token_urlsafe(32)
-    SECRET_KEY = app_setting.SECRET_KEY
+    SECRET_KEY = app_setting.SECRET_KEY  # secrets.token_urlsafe(32)
     ALGORITHM = app_setting.ALGORITHM
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
 
