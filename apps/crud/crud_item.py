@@ -9,7 +9,7 @@ from typing import (
 
 from .crud_base import CRUDBase
 from apps.models.item import Item
-from apps.schemas.item import ItemCreate, ItemUpdate, ItemGet
+from apps.schemas.item import ItemCreate, ItemUpdate, ItemGet, ItemInDBBase
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi.encoders import jsonable_encoder
@@ -19,27 +19,27 @@ import uuid
 
 
 class CRUDItem(CRUDBase[Item, ItemCreate, ItemUpdate]):
-    def create(self, db: Session, *, obj_in: ItemCreate) -> ItemGet:
-        db_obj = Item(
-            owner_id=obj_in.owner_id,
-            title=obj_in.title,
-            itemdata=obj_in.startupdata
-        )
-        db_obj.created = datetime.utcnow()
-        db_obj.edited = datetime.utcnow()
+    def create(self, db: Session, *, obj_in: ItemCreate, owner_id: str) -> ItemGet:
 
-        new_id = uuid.uuid4().hex
-
-        while db.query(Item).filter(Item.id == new_id).first():
+        while True:
             new_id = uuid.uuid4().hex
+            if not db.query(Item).filter(Item.id == new_id).first():
+                break
 
-        db_obj.id = new_id
+        db_obj = Item(
+            id=new_id,
+            owner_id=owner_id,
+            title=obj_in.title,
+            itemdata=obj_in.itemdata,
+            created=datetime.utcnow(),
+            edited=datetime.utcnow(),
+        )
 
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
 
-        item = ItemGet(
+        return ItemGet(
             id=db_obj.id,
             created=db_obj.created,
             edited=db_obj.edited,
@@ -47,8 +47,6 @@ class CRUDItem(CRUDBase[Item, ItemCreate, ItemUpdate]):
             title=db_obj.title,
             itemdata=db_obj.itemdata
         )
-
-        return item
 
     def get_by_id(self, db: Session, id: str) -> ItemGet:
         db_obj = self.get(db, id)
@@ -67,7 +65,7 @@ class CRUDItem(CRUDBase[Item, ItemCreate, ItemUpdate]):
             update_data = obj_in
         else:
             update_data = obj_in.dict(exclude_unset=True)
-        update_data["updated"] = datetime.utcnow()
+        update_data["edited"] = datetime.utcnow()
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
     def delete(self, db: Session, *, item_id: str) -> ItemGet:
