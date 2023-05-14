@@ -13,7 +13,7 @@ class UserBase(BaseModel):
     displayname: str
     email: EmailStr
 
-    user_type: str = UserType.app
+    user_type: str | None = UserType.app
 
 
 class UserDBBase(UserBase):
@@ -35,7 +35,20 @@ class UserGet(UserDBBase):
     pass
 
 
-class UserUpdate(UserDBBase):
-    old_password: str
+class UserProfile(BaseModel):
+    displayname: str
+    email: EmailStr
+
+
+class UserUpdateProfile(BaseModel):
+    displayname: Optional[str]
+    email: Optional[EmailStr]
+
+
+class UserUpdatePassword(BaseModel):
+    old_password: Optional[str]
     new_password: str
-    pass
+
+
+class UserResetPassword(UserUpdatePassword):
+    reset_token: str

@@ -6,29 +6,33 @@ from datetime import datetime
 
 class ItemBase(BaseModel):
     title: str
+    itemdata: Dict[str, Any] | None = None
 
 
 class ItemCreate(ItemBase):
-    owner_id: str
-    startupdata: Dict[str, Any] | None = None
+    pass
 
 
 class ItemUpdate(ItemBase):
-    itemdata: Dict[str, Any] | None = None
+    pass
 
 
 class ItemInDBBase(ItemCreate, ItemUpdate):
     id: str
+    owner_id: str
     created: datetime
     edited: datetime
 
     class Config:
         orm_mode = True
-        exclude = ['startupdata']
 
 
 class ItemGet(ItemInDBBase):
     pass
+    # class Config:
+    # exclude = {'init_data'}
+    # exclude = ['init_data']
+    # fields = {'init_data': {'exclude': True}}
 
 
 class ItemInDB(ItemInDBBase):

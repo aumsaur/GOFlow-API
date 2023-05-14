@@ -1,12 +1,9 @@
-from typing import Optional
+from http import HTTPStatus
 
 from pydantic import BaseModel
 
 
-class Token(BaseModel):
+class ResponseToken(BaseModel):
     access_token: str
     token_type: str
-
-
-class TokenPayload(BaseModel):
-    sub: Optional[int] = None
+    status: HTTPStatus
