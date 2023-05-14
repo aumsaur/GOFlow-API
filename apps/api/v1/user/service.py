@@ -124,11 +124,8 @@ async def reset_password(request: Request, db: Session = Depends(deps.get_db), *
     return
 
 
-@router.delete('/delete', tags=["Debugs"])
-async def delete_user(db: Session = Depends(deps.get_db), *, id: str):
+@router.delete('/delete')
+async def delete_user(request: Request, db: Session = Depends(deps.get_db), *, confirm_str: str):
+    user_id = request.state.token_sub.get('id')
+    # something to confirm that user want to remove this account
     return crud.user.remove(db, id=id)
-
-
-@router.get('/fetch', tags=["Debugs"])
-async def fetch_user(db: Session = Depends(deps.get_db), *, email: str):
-    return crud.user.get_by_email(db, email=email)
