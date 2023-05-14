@@ -1,10 +1,7 @@
 from sqlalchemy import Boolean, Column, String
 from sqlalchemy.orm import relationship
 
-# from pydantic import validator
-
 from apps.azure.base_model import Base
-# from schemas.user import UserType
 
 
 class User(Base):
