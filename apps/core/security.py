@@ -1,16 +1,9 @@
-import json
-
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
 from fastapi import HTTPException
 
 from apps.core.config import settings
-from typing import Dict, Any
-
-
-# with open('localconfig.json', 'r') as f:
-#     config = json.load(f)
 
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
@@ -25,6 +18,19 @@ class TokenDecodeError(Exception):
 
 
 def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)):
+    """
+    Create an access token with the provided data and expiration delta.
+
+    Args:
+        data (dict): The data to include in the access token payload.
+        expires_delta (timedelta, optional): The expiration delta for the access token. Defaults to timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES).
+
+    Returns:
+        str: The encoded access token.
+
+    Raises:
+        None
+    """
     payload = data.copy()
     expire = datetime.utcnow() + expires_delta
     payload.update({"exp": expire})
@@ -33,6 +39,18 @@ def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes
 
 
 def decode_access_token(token: str):
+    """
+    Decode and verify an access token.
+
+    Args:
+        token (str): The access token to decode and verify.
+
+    Returns:
+        dict: The payload of the decoded access token.
+
+    Raises:
+        TokenDecodeError: If there is an error decoding the token.
+    """
     try:
         payload = jwt.decode(token, SECRET_KEY, ALGORITHM)
         return payload
@@ -40,34 +58,29 @@ def decode_access_token(token: str):
         raise TokenDecodeError("Error decoding token") from e
 
 
-# TOKEN TODO:
-# {
-#     "sub": "{\"displayname\": \"ROMTAM\", \"email\": \"romtam.tan@mail.kmutt.ac.th\", \"user_type\": \"Google\", \"id\": \"737853f057734cf49ecd742071c743bd\"}",
-#     "exp": 1682822977
-# }
-# 1682822977 is
-
-
 def verify_access_token(token: str):
+    """
+    Verify the access token and return the expiration time as a `datetime` object if the token is valid.
+
+    Args:
+        token (str): The access token to verify.
+
+    Returns:
+        datetime: The expiration time of the token as a `datetime` object if the token is valid.
+
+    Raises:
+        HTTPException: If the token is invalid or has expired.
+    """
     try:
         decoded_token = decode_access_token(token)
         exp = decoded_token.get("exp")
         if exp is None:
             raise HTTPException(status_code=401, detail="Unauthorized")
         if datetime.utcnow() > datetime.fromtimestamp(exp):
-            raise HTTPException(status_code=401, detail="Token has expired")
-        return decoded_token
+            raise HTTPException(status_code=401, detail="Token expire")
+        return datetime.fromtimestamp(exp)
     except:
         raise HTTPException(status_code=401, detail="Unauthorized")
-
-# def is_token_expire(token: str):
-#     try:
-#         decoded_token = decode_access_token(token)
-#         exp_timestamp = decoded_token["exp"]
-#         exp_datetime = datetime.fromtimestamp(exp_timestamp)
-#         return exp_datetime < datetime.now()
-#     except jwt.exceptions.ExpiredSignatureError:
-#         return True
 
 
 def get_user_from_token(token: str):
