@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from apps.core.config import settings
 from apps.api.v1.api import api_router, authenticate_token
 from starlette.middleware.sessions import SessionMiddleware
