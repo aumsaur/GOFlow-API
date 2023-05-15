@@ -20,7 +20,6 @@ import uuid
 
 class CRUDItem(CRUDBase[Item, ItemCreate, ItemUpdate]):
     def create(self, db: Session, *, obj_in: ItemCreate, owner_id: str) -> ItemGet:
-
         while True:
             new_id = uuid.uuid4().hex
             if not db.query(Item).filter(Item.id == new_id).first():
