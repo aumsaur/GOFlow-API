@@ -17,8 +17,13 @@ from apps.schemas.user import UserCreate, UserUpdateProfile, UserUpdatePassword,
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdateProfile]):
     def create(self, db: Session, *, obj_in: UserCreate) -> UserGet:
+        while True:
+            new_id = uuid.uuid4().hex
+            if not db.query(User).filter(User.id == new_id).first():
+                break
+
         db_obj = User(
-            id=uuid.uuid4().hex,
+            id=new_id,
             email=obj_in.email,
             user_type=obj_in.user_type,
             displayname=obj_in.displayname,
@@ -31,13 +36,11 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdateProfile]):
         return UserGet(id=db_obj.id, displayname=db_obj.displayname, email=db_obj.email, user_type=db_obj.user_type)
 
     def get_by_email(self, db: Session, *, email: str) -> Optional[UserGet]:
-        # return db.query(User).filter(User.email == email).first()
         db_obj = db.query(User).filter(User.email == email).first()
         return UserGet.from_orm(db_obj) if db_obj else None
 
     def get_by_id(self, db: Session, *, id: str) -> Optional[UserGet]:
-        # return db.query(User).filter(User.email == email).first()
-        db_obj = db.query(User).filter(User.email == id).first()
+        db_obj = db.query(User).filter(User.id == id).first()
         return UserGet.from_orm(db_obj) if db_obj else None
 
     def update(self, db: Session, *, db_obj: User, obj_in: Union[UserUpdateProfile, UserUpdatePassword]) -> UserGet:
