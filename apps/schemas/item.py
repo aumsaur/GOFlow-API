@@ -1,12 +1,11 @@
-from pydantic import BaseModel, EmailStr
-from typing import Union, Dict, Any
-from typing import Type
+from pydantic import BaseModel
+from typing import Dict, Any
 from datetime import datetime
 
 
 class ItemBase(BaseModel):
     title: str
-    itemdata: Dict[str, Any] | None = None
+    item_data: Dict[str, Any] | None = {}
 
 
 class ItemCreate(ItemBase):
@@ -29,10 +28,6 @@ class ItemInDBBase(ItemCreate, ItemUpdate):
 
 class ItemGet(ItemInDBBase):
     pass
-    # class Config:
-    # exclude = {'init_data'}
-    # exclude = ['init_data']
-    # fields = {'init_data': {'exclude': True}}
 
 
 class ItemInDB(ItemInDBBase):

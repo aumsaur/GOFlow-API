@@ -1,12 +1,7 @@
-# from typing import TYPE_CHECKING
-
 from sqlalchemy import Column, ForeignKey, JSON, String, UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.orm import relationship
-from apps.azure.base_model import Base
-# from .user import User
 
-# if TYPE_CHECKING:
-#     from .item import Item  # noqa: F401
+from apps.azure.base_model import Base
 
 
 class Item(Base):
@@ -15,7 +10,7 @@ class Item(Base):
     title = Column(String, index=False)
     created = Column(String, index=False)
     edited = Column(String, index=False)
-    itemdata = Column(JSON, index=False)
+    item_data = Column(JSON, index=False)
 
     owner = relationship("User", back_populates="items")
 

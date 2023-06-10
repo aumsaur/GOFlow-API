@@ -5,6 +5,8 @@ from fastapi import HTTPException
 
 from apps.core.config import settings
 
+import json
+
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
@@ -81,19 +83,6 @@ def verify_access_token(token: str):
         return datetime.fromtimestamp(exp)
     except:
         raise HTTPException(status_code=401, detail="Unauthorized")
-
-
-def get_user_from_token(token: str):
-    if token:
-        try:
-            user = decode_access_token(token)['name']
-            return user
-        except KeyError as e:
-            raise TokenDecodeError(
-                "Token does not contain expected key") from e
-        except JWTError as e:
-            raise TokenDecodeError("Error getting user from token") from e
-    return None
 
 
 def verify_password(plain_password, hashed_password):

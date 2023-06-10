@@ -10,7 +10,7 @@ class UserType(str, Enum):
 
 
 class UserBase(BaseModel):
-    displayname: str
+    display_name: Optional[str]
     email: EmailStr
 
     user_type: str | None = UserType.app
@@ -36,12 +36,12 @@ class UserGet(UserDBBase):
 
 
 class UserProfile(BaseModel):
-    displayname: str
+    display_name: str
     email: EmailStr
 
 
 class UserUpdateProfile(BaseModel):
-    displayname: Optional[str]
+    display_name: Optional[str]
     email: Optional[EmailStr]
 
 
