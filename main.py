@@ -27,12 +27,6 @@ if settings.BACKEND_CORS_ORIGINS:
 async def root():
     return {"message": "Hello from server"}
 
-
-@app.get("/decode")
-async def decode(decode_this: str):
-    from apps.core.security import decode_access_token
-    return decode_access_token(decode_this)
-
 if __name__ == '__main__':
     uvicorn.run("main:app",
                 host="localhost",
